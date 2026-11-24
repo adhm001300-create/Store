@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة التحكم | ملء تلقائي وإدارة المعرض</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --danger: #dc2626;
+      --edit: #0284c7;
+      --border: #cbd5e1;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px 12px 48px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1020px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+      margin-bottom: 20px;
+    }
+
+    h1, h2 {
+      font-weight: 800;
+      margin-bottom: 12px;
+      font-size: clamp(1.15rem, 2.5vw, 1.45rem);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: #fff;
+      padding: 16px;
+      border-radius: 16px;
+      border-right: 4px solid var(--primary);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    }
+
+    .stat-box span {
+      font-size: 0.84rem;
+      color: var(--muted);
+      display: block;
+    }
+
+    .stat-box strong {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      font-size: 0.86rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 13px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      font-family: inherit;
+      font-size: 0.94rem;
+      background: #fff;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid rgba(15, 118, 110, 0.25);
+      border-color: var(--primary);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 76px;
+    }
+
+    .auto-badge {
+      display: inline-block;
+      font-size: 0.76rem;
+      color: var(--primary-dark);
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-top: 4px;
+      font-weight: 700;
+    }
+
+    .row-inline {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .check-item input {
+      width: auto;
+      transform: scale(1.1);
+    }
+
+    .btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 11px 18px;
+      border-radius: 11px;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.9rem;
+      min-height: 42px;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-translate {
+      background: #0f172a;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      min-height: 36px;
+    }
+
+    .btn-secondary { background: #475569; }
+    .btn-danger { background: var(--danger); padding: 7px 12px; font-size: 0.82rem; min-height: 36px; }
+    .btn-edit { background: var(--edit); padding: 7px 12px; font-size: 0.82rem; min-height: 36px; }
+    .btn-copy { background: #0d9488; padding: 7px 12px; font-size: 0.82rem; min-height: 36px; }
+
+    .cat-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .cat-row input {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .cat-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .cat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      color: var(--primary-dark);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .cat-chip button {
+      background: none;
+      border: none;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .product-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #e2e8f0;
+      flex-wrap: wrap;
+    }
+
+    .prod-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .prod-meta img {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      background: #f8fafc;
+      border-radius: 9px;
+      padding: 4px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .hidden { display: none !important; }
+
+    .toast {
+      padding: 11px 15px;
+      border-radius: 11px;
+      margin-bottom: 14px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      background: #dcfce7;
+      color: #166534;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="loginBox" class="card" style="max-width: 420px; margin: 48px auto;">
+      <h1 style="text-align: center;">دخول لوحة التحكم</h1>
+      <div style="margin-bottom: 12px;">
+        <label>البريد الإلكتروني</label>
+        <input type="email" id="emailInput" autocomplete="email" placeholder="admin@example.com" />
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label>كلمة المرور</label>
+        <input type="password" id="passInput" autocomplete="current-password" placeholder="••••••••" />
+      </div>
+      <button type="button" class="btn" style="width: 100%;" id="loginBtn">تسجيل الدخول</button>
+      <p id="loginError" style="color: #dc2626; font-size: 0.85rem; margin-top: 10px; text-align: center;"></p>
+    </div>
+
+    <div id="dashboard" class="hidden">
+      <div class="topbar">
+        <h1>إدارة المعرض (موبايل • تابلت • لابتوب)</h1>
+        <div style="display: flex; gap: 8px;">
+          <a href="index.html" target="_blank" class="btn btn-secondary" style="text-decoration: none;">فتح المعرض</a>
+          <button type="button" class="btn btn-danger" id="logoutBtn">خروج</button>
+        </div>
+      </div>
+
+      <div id="toastMsg" class="toast hidden"></div>
+
+      <div class="stats">
+        <div class="stat-box">
+          <span>المنتجات المحملة</span>
+          <strong id="totalProducts">0</strong>
+        </div>
+        <div class="stat-box">
+          <span>نقرات المنتجات المعروضة</span>
+          <strong id="totalClicks">0</strong>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 id="catTitle">إدارة الأقسام</h2>
+        <div class="cat-row">
+          <input type="hidden" id="editCatId" />
+          <input type="text" id="catAr" placeholder="اكتب اسم القسم بالعربي (يُملأ الإنجليزي تلقائياً عند الخروج من الخانة)" />
+          <input type="text" id="catEn" placeholder="English category name (auto-filled)" />
+          <button type="button" class="btn btn-translate" id="autoTranslateCatBtn">ترجمة الآن</button>
+          <button type="button" class="btn" id="saveCatBtn">+ حفظ القسم</button>
+          <button type="button" class="btn btn-secondary hidden" id="cancelCatBtn">إلغاء</button>
+        </div>
+        <div class="cat-tags" id="categoriesList"></div>
+      </div>
+
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+          <h2 id="formTitle" style="margin: 0;">إضافة منتج جديد</h2>
+          <button type="button" class="btn btn-translate" id="autoTranslateProdBtn">🌐 إعادة ترجمة الاسم والوصف</button>
+        </div>
+
+        <form id="productForm" class="form-grid">
+          <input type="hidden" id="editId" />
+
+          <div>
+            <label>اسم المنتج (عربي) *</label>
+            <input type="text" id="pName" required placeholder="اكتب الاسم مرة واحدة بالعربي" />
+            <span class="auto-badge" id="autoStatus">الملء التلقائي يعمل عند الخروج من الخانة أو بالضغط على زر الترجمة</span>
+          </div>
+
+          <div>
+            <label>اسم المنتج (إنجليزي - ملء تلقائي)</label>
+            <input type="text" id="pNameEn" placeholder="Auto-filled in English..." />
+          </div>
+
+          <div>
+            <label>الماركة *</label>
+            <input type="text" id="pBrand" required placeholder="CeraVe" />
+          </div>
+
+          <div>
+            <label>القسم *</label>
+            <select id="pCategory" required></select>
+          </div>
+
+          <div>
+            <label>السعر أو ملاحظة العرض</label>
+            <input type="text" id="pPrice" placeholder="95 SAR أو عرض خاص" />
+          </div>
+
+          <div>
+            <label>التقييم (من 5)</label>
+            <input type="text" id="pRating" value="4.8" />
+          </div>
+
+          <div>
+            <label>رابط أمازون السعودية *</label>
+            <input type="text" id="pUrl" required placeholder="https://www.amazon.sa/dp/..." />
+          </div>
+
+          <div>
+            <label>رابط الصورة الرئيسية *</label>
+            <input type="text" id="pImage" required placeholder="https://..." />
+          </div>
+
+          <div class="full">
+            <label>صور إضافية (رابط في كل سطر - اختياري)</label>
+            <textarea id="pGallery" placeholder="https://img2.jpg&#10;https://img3.jpg"></textarea>
+          </div>
+
+          <div class="full">
+            <label>رابط فيديو توضيحي (MP4 مباشر أو YouTube / Shorts - اختياري)</label>
+            <input type="text" id="pVideo" placeholder="https://www.youtube.com/watch?v=... أو رابط فيديو مباشر" />
+          </div>
+
+          <div class="full">
+            <label>الوصف (عربي)</label>
+            <textarea id="pDesc" placeholder="اكتب الوصف بالعربي (يُملأ الإنجليزي تلقائياً عند الخروج من الخانة)..."></textarea>
+          </div>
+
+          <div class="full">
+            <label>الوصف (إنجليزي - ملء تلقائي)</label>
+            <textarea id="pDescEn" placeholder="Auto-filled description..."></textarea>
+          </div>
+
+          <div class="full row-inline">
+            <div class="check-item">
+              <input type="checkbox" id="pFeatured" />
+              <label for="pFeatured" style="margin: 0;">الأكثر طلباً</label>
+            </div>
+            <div class="check-item">
+              <input type="checkbox" id="pVisible" checked />
+              <label for="pVisible" style="margin: 0;">ظاهر للزوار</label>
+            </div>
+          </div>
+
+          <div class="full row-inline" style="margin-top: 8px;">
+            <button type="submit" class="btn" id="saveBtn">حفظ ونشر المنتج</button>
+            <button type="button" class="btn btn-secondary hidden" id="cancelEditBtn">إلغاء التعديل</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>المنتجات الحالية</h2>
+        <div id="productsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // 🔴 ضع نفس بيانات Firebase الخاصة بك هنا
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const FALLBACK_THUMB = "data:image/svg+xml;utf8," + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">
+        <rect width="60" height="60" fill="#f1f5f9"/>
+        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#64748b" font-family="sans-serif" font-size="10">IMG</text>
+      </svg>`
+    );
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let cachedCats = [];
+    let cachedProds = [];
+    let isBusy = false;
+
+    function normalizeUrl(raw) {
+      const val = (raw || "").trim();
+      if (!val) return "";
+      const withScheme = /^https?:\/\//i.test(val) ? val : `https://${val}`;
+      try {
+        const parsed = new URL(withScheme);
+        return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.toString() : "";
+      } catch {
+        return "";
+      }
+    }
+
+    function notify(text) {
+      const el = document.getElementById("toastMsg");
+      el.textContent = text;
+      el.classList.remove("hidden");
+      setTimeout(() => el.classList.add("hidden"), 3000);
+    }
+
+    function setBusyState(state) {
+      isBusy = state;
+      document.getElementById("saveBtn").disabled = state;
+      document.getElementById("autoTranslateProdBtn").disabled = state;
+      document.getElementById("autoTranslateCatBtn").disabled = state;
+      document.getElementById("saveCatBtn").disabled = state;
+    }
+
+    async function translateArToEn(text) {
+      const clean = (text || "").trim();
+      if (!clean) return "";
+      try {
+        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(clean)}&langpair=ar|en`);
+        const data = await res.json();
+        const translated = data?.responseData?.translatedText || "";
+        return translated.toUpperCase().includes("MYMEMORY WARNING") ? "" : translated;
+      } catch {
+        return "";
+      }
+    }
+
+    document.getElementById("pName").addEventListener("blur", async () => {
+      if (isBusy) return;
+      const val = document.getElementById("pName").value.trim();
+      const currentEn = document.getElementById("pNameEn").value.trim();
+      if (!val || currentEn) return;
+      document.getElementById("autoStatus").textContent = "جاري الملء التلقائي للاسم...";
+      const translated = await translateArToEn(val);
+      if (translated && !document.getElementById("pNameEn").value.trim()) {
+        document.getElementById("pNameEn").value = translated;
+      }
+      document.getElementById("autoStatus").textContent = "تم الملء التلقائي";
+    });
+
+    document.getElementById("pDesc").addEventListener("blur", async () => {
+      if (isBusy) return;
+      const val = document.getElementById("pDesc").value.trim();
+      const currentEn = document.getElementById("pDescEn").value.trim();
+      if (!val || currentEn) return;
+      const translated = await translateArToEn(val);
+      if (translated && !document.getElementById("pDescEn").value.trim()) {
+        document.getElementById("pDescEn").value = translated;
+      }
+    });
+
+    document.getElementById("catAr").addEventListener("blur", async () => {
+      if (isBusy) return;
+      const val = document.getElementById("catAr").value.trim();
+      const currentEn = document.getElementById("catEn").value.trim();
+      if (!val || currentEn) return;
+      const translated = await translateArToEn(val);
+      if (translated && !document.getElementById("catEn").value.trim()) {
+        document.getElementById("catEn").value = translated;
+      }
+    });
+
+    document.getElementById("autoTranslateCatBtn").addEventListener("click", async () => {
+      if (isBusy) return;
+      const arVal = document.getElementById("catAr").value.trim();
+      if (!arVal) return;
+      setBusyState(true);
+      const enVal = await translateArToEn(arVal);
+      setBusyState(false);
+      if (enVal) {
+        document.getElementById("catEn").value = enVal;
+        notify("تمت ترجمة اسم القسم للإنجليزية!");
+      } else {
+        notify("تعذر الاتصال بخدمة الترجمة حالياً.");
+      }
+    });
+
+    document.getElementById("autoTranslateProdBtn").addEventListener("click", async () => {
+      if (isBusy) return;
+      const nameAr = document.getElementById("pName").value.trim();
+      const descAr = document.getElementById("pDesc").value.trim();
+      if (!nameAr && !descAr) return;
+
+      setBusyState(true);
+      document.getElementById("autoStatus").textContent = "جاري الترجمة...";
+      const [nameEn, descEn] = await Promise.all([
+        nameAr ? translateArToEn(nameAr) : Promise.resolve(""),
+        descAr ? translateArToEn(descAr) : Promise.resolve("")
+      ]);
+      setBusyState(false);
+
+      if (nameEn) document.getElementById("pNameEn").value = nameEn;
+      if (descEn) document.getElementById("pDescEn").value = descEn;
+      document.getElementById("autoStatus").textContent = "تم تحديث الترجمة";
+      notify(nameEn || descEn ? "تمت الترجمة، راجعها واحفظ المنتج!" : "تعذر الترجمة التلقائية حالياً.");
+    });
+
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        document.getElementById("loginBox").classList.add("hidden");
+        document.getElementById("dashboard").classList.remove("hidden");
+        await loadCats();
+        await loadProds();
+      } else {
+        document.getElementById("loginBox").classList.remove("hidden");
+        document.getElementById("dashboard").classList.add("hidden");
+      }
+    });
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const email = document.getElementById("emailInput").value.trim();
+      const pass = document.getElementById("passInput").value;
+      document.getElementById("loginError").textContent = "";
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch {
+        document.getElementById("loginError").textContent = "بيانات الدخول غير صحيحة.";
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
+
+    async function loadCats() {
+      const snap = await getDocs(query(collection(db, "categories"), orderBy("createdAt", "asc")));
+      cachedCats = [];
+      snap.forEach(d => cachedCats.push({ id: d.id, ...d.data() }));
+
+      document.getElementById("categoriesList").innerHTML = cachedCats.length
+        ? cachedCats.map(c => `
+            <span class="cat-chip">
+              ${c.name}${c.name_en ? ` (${c.name_en})` : ""}
+              <button type="button" style="color:#0284c7" onclick="editCat('${c.id}')">✎</button>
+              <button type="button" style="color:#dc2626" onclick="delCat('${c.id}')">×</button>
+            </span>
+          `).join("")
+        : `<span style="color:#64748b; font-size:0.84rem;">أضف أول قسم.</span>`;
+
+      const selectEl = document.getElementById("pCategory");
+      selectEl.innerHTML = cachedCats.length
+        ? cachedCats.map(c => `<option value="${c.id}">${c.name}</option>`).join("")
+        : `<option value="general">عام</option>`;
+
+      const savedCat = localStorage.getItem("last_admin_cat");
+      if (savedCat && cachedCats.some(c => c.id === savedCat)) {
+        selectEl.value = savedCat;
+      }
+    }
+
+    document.getElementById("pCategory").addEventListener("change", e => {
+      localStorage.setItem("last_admin_cat", e.target.value);
+    });
+
+    function resetCat() {
+      document.getElementById("editCatId").value = "";
+      document.getElementById("catAr").value = "";
+      document.getElementById("catEn").value = "";
+      document.getElementById("catTitle").textContent = "إدارة الأقسام";
+      document.getElementById("saveCatBtn").textContent = "+ حفظ القسم";
+      document.getElementById("cancelCatBtn").classList.add("hidden");
+    }
+
+    document.getElementById("cancelCatBtn").addEventListener("click", resetCat);
+
+    document.getElementById("saveCatBtn").addEventListener("click", async () => {
+      if (isBusy) return;
+      const id = document.getElementById("editCatId").value;
+      const name = document.getElementById("catAr").value.trim();
+      let name_en = document.getElementById("catEn").value.trim();
+      if (!name && !name_en) return;
+
+      setBusyState(true);
+      if (!name_en && name) name_en = await translateArToEn(name);
+
+      if (id) {
+        await updateDoc(doc(db, "categories", id), { name: name || name_en, name_en });
+        notify("تم تعديل القسم!");
+      } else {
+        const ref = await addDoc(collection(db, "categories"), {
+          name: name || name_en,
+          name_en,
+          createdAt: serverTimestamp()
+        });
+        localStorage.setItem("last_admin_cat", ref.id);
+        notify("تمت إضافة القسم!");
+      }
+      setBusyState(false);
+      resetCat();
+      await loadCats();
+    });
+
+    window.editCat = (id) => {
+      const c = cachedCats.find(x => x.id === id);
+      if (!c) return;
+      document.getElementById("editCatId").value = c.id;
+      document.getElementById("catAr").value = c.name || "";
+      document.getElementById("catEn").value = c.name_en || "";
+      document.getElementById("catTitle").textContent = "تعديل القسم";
+      document.getElementById("saveCatBtn").textContent = "حفظ التعديل";
+      document.getElementById("cancelCatBtn").classList.remove("hidden");
+    };
+
+    window.delCat = async (id) => {
+      if (confirm("حذف هذا القسم؟ لن يتم حذف المنتجات المرتبطة به.")) {
+        await deleteDoc(doc(db, "categories", id));
+        await loadCats();
+      }
+    };
+
+    document.getElementById("productForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      if (isBusy) return;
+
+      const safeUrl = normalizeUrl(document.getElementById("pUrl").value);
+      const safeImg = normalizeUrl(document.getElementById("pImage").value);
+      const safeVideo = normalizeUrl(document.getElementById("pVideo").value);
+
+      if (!safeUrl || !safeImg) {
+        notify("تأكد من إدخال رابط أمازون ورابط الصورة بشكل صحيح.");
+        return;
+      }
+
+      setBusyState(true);
+      const editId = document.getElementById("editId").value;
+      const selectEl = document.getElementById("pCategory");
+      const chosenCat = cachedCats.find(c => c.id === selectEl.value);
+
+      const name = document.getElementById("pName").value.trim();
+      let name_en = document.getElementById("pNameEn").value.trim();
+      const description = document.getElementById("pDesc").value.trim();
+      let description_en = document.getElementById("pDescEn").value.trim();
+
+      if (!name_en && name) name_en = await translateArToEn(name);
+      if (!description_en && description) description_en = await translateArToEn(description);
+
+      const gallery = document.getElementById("pGallery").value
+        .split(/\r?\n/)
+        .map(s => normalizeUrl(s))
+        .filter(Boolean);
+
+      const payload = {
+        name,
+        name_en,
+        brand: document.getElementById("pBrand").value.trim(),
+        category: selectEl.value,
+        categoryLabel: chosenCat ? chosenCat.name : selectEl.options[selectEl.selectedIndex]?.text || "",
+        categoryLabel_en: chosenCat ? (chosenCat.name_en || "") : "",
+        price: document.getElementById("pPrice").value.trim(),
+        rating: document.getElementById("pRating").value.trim() || "4.8",
+        amazonUrl: safeUrl,
+        image: safeImg,
+        gallery,
+        videoUrl: safeVideo,
+        description,
+        description_en,
+        featured: document.getElementById("pFeatured").checked,
+        visible: document.getElementById("pVisible").checked
+      };
+
+      localStorage.setItem("last_admin_cat", selectEl.value);
+
+      if (editId) {
+        await updateDoc(doc(db, "products", editId), payload);
+        notify("تم تحديث المنتج بنجاح!");
+      } else {
+        payload.clicks = 0;
+        payload.createdAt = serverTimestamp();
+        await addDoc(collection(db, "products"), payload);
+        notify("تمت إضافة المنتج ونشره!");
+      }
+
+      setBusyState(false);
+      resetProd();
+      await loadProds();
+    });
+
+    function resetProd() {
+      const keepCat = localStorage.getItem("last_admin_cat");
+      document.getElementById("productForm").reset();
+      document.getElementById("editId").value = "";
+      document.getElementById("pNameEn").value = "";
+      document.getElementById("pDescEn").value = "";
+      document.getElementById("pRating").value = "4.8";
+      document.getElementById("pVisible").checked = true;
+      document.getElementById("autoStatus").textContent = "الملء التلقائي يعمل عند الخروج من الخانة أو بالضغط على زر الترجمة";
+      if (keepCat && cachedCats.some(c => c.id === keepCat)) {
+        document.getElementById("pCategory").value = keepCat;
+      }
+      document.getElementById("formTitle").textContent = "إضافة منتج جديد";
+      document.getElementById("saveBtn").textContent = "حفظ ونشر المنتج";
+      document.getElementById("cancelEditBtn").classList.add("hidden");
+    }
+
+    document.getElementById("cancelEditBtn").addEventListener("click", resetProd);
+
+    async function loadProds() {
+      const snap = await getDocs(query(collection(db, "products"), orderBy("createdAt", "desc"), limit(300)));
+      cachedProds = [];
+      let clicks = 0;
+      snap.forEach(d => {
+        const data = d.data();
+        cachedProds.push({ id: d.id, ...data });
+        clicks += (data.clicks || 0);
+      });
+
+      document.getElementById("totalProducts").textContent = cachedProds.length;
+      document.getElementById("totalClicks").textContent = clicks;
+
+      const listEl = document.getElementById("productsList");
+      listEl.innerHTML = cachedProds.length
+        ? cachedProds.map(p => `
+            <div class="product-row">
+              <div class="prod-meta">
+                <img src="${normalizeUrl(p.image) || FALLBACK_THUMB}" alt="" />
+                <div>
+                  <strong>${p.name}</strong>
+                  <span style="font-size:0.78rem; color:${p.visible === false ? "#dc2626" : "#0f766e"}; font-weight:700;">
+                    • ${p.visible === false ? "مخفي" : "ظاهر"}
+                  </span>
+                  <div style="font-size:0.82rem; color:#64748b;">
+                    ${p.brand || ""} | النقرات: <strong>${p.clicks || 0}</strong> ${p.videoUrl ? "| فيديو ✓" : ""}
+                  </div>
+                </div>
+              </div>
+              <div class="actions">
+                <button type="button" class="btn btn-copy" onclick="copyProdLink('${p.id}')">نسخ رابط المنتج</button>
+                <button type="button" class="btn btn-edit" onclick="editProd('${p.id}')">تعديل</button>
+                <button type="button" class="btn btn-danger" onclick="delProd('${p.id}')">حذف</button>
+              </div>
+            </div>
+          `).join("")
+        : `<p style="color:#64748b;">لا توجد منتجات بعد.</p>`;
+
+      listEl.querySelectorAll(".prod-meta img").forEach(imgEl => {
+        imgEl.addEventListener("error", () => {
+          imgEl.src = FALLBACK_THUMB;
+        }, { once: true });
+      });
+    }
+
+    window.copyProdLink = (id) => {
+      const base = window.location.href.replace(/admin\.html.*$/, "index.html");
+      const link = `${base}?p=${encodeURIComponent(id)}`;
+      navigator.clipboard?.writeText(link).then(() => {
+        notify("تم نسخ رابط المنتج المباشر!");
+      }).catch(() => {
+        prompt("انسخ رابط المنتج:", link);
+      });
+    };
+
+    window.editProd = (id) => {
+      const p = cachedProds.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById("editId").value = p.id;
+      document.getElementById("pName").value = p.name || "";
+      document.getElementById("pNameEn").value = p.name_en || "";
+      document.getElementById("pBrand").value = p.brand || "";
+      if (p.category) document.getElementById("pCategory").value = p.category;
+      document.getElementById("pPrice").value = p.price || "";
+      document.getElementById("pRating").value = p.rating || "4.8";
+      document.getElementById("pUrl").value = p.amazonUrl || "";
+      document.getElementById("pImage").value = p.image || "";
+      document.getElementById("pGallery").value = Array.isArray(p.gallery) ? p.gallery.join("\n") : "";
+      document.getElementById("pVideo").value = p.videoUrl || "";
+      document.getElementById("pDesc").value = p.description || "";
+      document.getElementById("pDescEn").value = p.description_en || "";
+      document.getElementById("pFeatured").checked = !!p.featured;
+      document.getElementById("pVisible").checked = p.visible !== false;
+      document.getElementById("formTitle").textContent = "تعديل المنتج";
+      document.getElementById("saveBtn").textContent = "حفظ التعديلات";
+      document.getElementById("cancelEditBtn").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.delProd = async (id) => {
+      if (confirm("حذف المنتج نهائياً؟")) {
+        await deleteDoc(doc(db, "products", id));
+        await loadProds();
+      }
+    };
+  </script>
+</body>
+</html>
